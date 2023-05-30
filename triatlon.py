@@ -1,4 +1,5 @@
 from ParticipantButton import *
+from Participant import *
 
 pygame.init()
 global participants
