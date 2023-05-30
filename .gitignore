@@ -1,0 +1,7 @@
+/old_out/
+/out/
+/in/
+.idea
+.DS_Store
+__pycache__/
+
