@@ -19,10 +19,8 @@ class Participant_Button:
             if self.participant.end_time <= datetime.datetime.fromtimestamp(0.000001):
                 self.participant.force_fin()
             self.x = self.x + 40
-            self.change_text(self.participant.name_and_group +" - måltid: "+self.participant.start_time_str, bg="green")
+            self.change_text(self.participant.name_and_group + " - måltid: " +self.participant.start_time_str, bg="green")
 
-
-            
 
 
     def change_text(self, text, bg="black"):
@@ -47,25 +45,28 @@ class Participant_Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 if self.rect.collidepoint(x, y):
-                    if not self.participant.started:
-                        self.x = self.x + 20
-                        self.participant.start()
-                        self.change_text(self.participant.name_and_group +" - starttid: "+self.participant.start_time_str, bg="white")
-                        self.participant.started = True
-                        self.participant.still_active = True
-                    elif self.participant.still_active:
-                        self.x = self.x + 20
-                        self.participant.fin()
-                        self.change_text(self.participant.name_and_group +" - måltid: "+self.participant.slut_tid_str, bg="green")
-                        self.participant.still_active = False
-                    else:
-                        self.participant.still_active = True
-                        self.x = self.x - 20
-                        self.change_text(self.participant.name_and_group +" - starttid: "+self.participant.start_time_str, bg="white")
+                    self.press()
 
 
-
-                        
+    def press(self):
+        if not self.participant.started:
+            self.x = self.x + 20
+            self.participant.start()
+            self.change_text(self.participant.name_and_group + " - starttid: " + self.participant.start_time_str,
+                             bg="white")
+            self.participant.started = True
+            self.participant.still_active = True
+        elif self.participant.still_active:
+            self.x = self.x + 20
+            self.participant.fin()
+            self.change_text(self.participant.name_and_group + " - måltid: " + self.participant.slut_tid_str,
+                             bg="green")
+            self.participant.still_active = False
+        else:
+            self.participant.still_active = True
+            self.x = self.x - 20
+            self.change_text(self.participant.name_and_group + " - starttid: " + self.participant.start_time_str,
+                             bg="white")
     
     def start(self):
         if not self.participant.started and not self.participant.still_active: 

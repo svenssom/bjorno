@@ -1,11 +1,12 @@
+from copy import deepcopy
+from datetime import time
+from os.path import exists
+
 from ParticipantButton import *
 from Participant import *
+from GroupButton import *
 
 pygame.init()
-global participants
-participants = []
-global fuck_it_ofsett_x
-global fuck_it_ofsett_y
 fuck_it_offset_x = 100
 fuck_it_offset_y = 0
 WIDTH, HEIGHT = 1400, 800
@@ -43,79 +44,54 @@ def set_up(file_name):
     tmp = []
     f = open(file_name, "r")
     for x in f:
-        y = x.split()
-        if len(y) < 3:
-            continue
-        # formatet på datetime lägger till ett mellanslag/elemet. Sätter ihop elementen och tar bort det "onödiga" elementet.
-        if len(y) > 11:
-            y[5] = y[5] + " " + y[6]
-            del y[6]
-            y[6] = y[6] + " " + y[7]
-            del y[7]
-        # gissad_tid formatering
-        try:
-            y[1] = int(y[1])
-        except ValueError:
-            # Handle the exception
-            if ":" in y[1]:
-                y[1] = minutes_and_sec_as_str_to_sec(y[1])
-            else:
-                y[0] = "*" + y[0]
-                y[1] = 100000
-
-        if y[2] == "True":
-            y[2] = True
-        else:
-            y[2] = False
-        if y[3] == "True":
-            y[3] = True
-        else:
-            y[3] = False
-        if y[4] == "True":
-            y[4] = True
-        else:
-            y[4] = False
-        if y[5] == "0" or len(y) == 5 or y[5] == "start_tid":
-            tmp.append(Participant(y[0], y[1], y[2], y[3], y[4]))
-            continue
-        else:
-            # 2022-06-20 11:40:15.846478
-            y[5] = datetime.datetime.strptime(y[5], "%Y-%m-%d %H:%M:%S.%f")
-        if y[6] == "0" or len(y) == 5 or y[6] == "slut_tid":
-            y[6] = None
-        else:
-            y[6] = datetime.datetime.strptime(y[6], "%Y-%m-%d %H:%M:%S.%f")
-        if y[7] == "0" or y[7] == "-1" or len(y) == 5 or y[7] == "procentuell_skilnad":
-            y[7] = -1
-        if y[8] == "True":
-            y[8] = True
-        else:
-            y[8] = False
-
-        if y[10] == "True":
-            y[10] = True
-        else:
-            y[10] = False
-
-        # tmp = name, gissda_tid, cykla, springa, simma, start_tid, slut_tid, procentruell_skilnad, fortfarande_aktiv, start_grupp, startat
-        tmp.append(Participant(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], y[8], y[9], y[10]))
+        tmp.append(read_participant_line(x))
     print("just nu är ser deltagarlistan ut som följer:", tmp)
     return tmp
+
+
+def read_participant_line(line):
+    fields = line.split("\t")
+    name = fields[1]
+    swimming = "Simma" in fields[2]
+    running = "Springa" in fields[2]
+    biking = "Cykla" in fields[2]
+    guessed_time = minutes_and_sec_as_str_to_sec(fields[3])
+    group = 1 if "Ja" in fields[4] else 2
+    return Participant(name, guessed_time, biking, running, swimming, group)
 
 
 # skapa knappar för alla deltagare i deltagare_lista
 def set_up_buttons():
     buttons = []
     i = 0
-    j = 40
+    j = 90
+    current_group = 1
     for participant in participants:
+        if j > HEIGHT - 100 or participant.start_group > current_group:
+            i += 500
+            j = 90
+        current_group = participant.start_group
         buttons.append(Participant_Button(participant, (i, j)))
         j += 30
-        if j > HEIGHT - 100:
-            i += 500
-            j = 40
+
     return buttons
 
+
+def make_group_button(group_number):
+    i = 500*(group_number-1)
+    j = 40
+    tmp_buttons = []
+    for button in participant_buttons:
+        if button.participant.start_group == group_number:
+            tmp_buttons.append(button)
+    return Group_Button(group_number, tmp_buttons, (i,j))
+
+
+def make_group_buttons():
+    tmp_buttons = []
+    for x in [1,2,3,4]:
+        tmp_buttons.append(make_group_button(x))
+    return tmp_buttons
 
 # skapa korrekt formaterad backup fil
 def back_up(lista):
@@ -162,9 +138,6 @@ def back_up_simpel_quickest(lista, version):
 
 # bubbelsort, går att optimera lite granna
 def sort():
-    quickest = []
-    best = []
-
     for participant in participants:
         participant.calculate_result()
 
@@ -176,10 +149,6 @@ def sort():
             if best[j].difference_as_percentage > best[j + 1].difference_as_percentage:
                 best[j], best[j + 1] = best[j + 1], best[j]
 
-    # for i in range(len(quickest)): #i = [1,2,3,4,5,6,7,8,9,10,11,13,14]
-    #     if not quickest[i].do_all_three:
-    #         del quickest[i]
-    #         i=i-1
     i = 0
     while i < len(quickest):
         if not quickest[i].do_all_three:
@@ -207,8 +176,7 @@ def sort():
     # back_up_simpel(quickest, "snabbast")
     back_up_simpel_presentega(best, "bäst gissat")
 
-
-# end sortera
+# end sort
 
 def sort_by_name():
     for i in range(len(participants) - 1):
@@ -223,7 +191,6 @@ def sort_by_name():
 
 def fuckit():
     print("startgrupp namn gissad_tid alla_grenar(y/n)")
-    inputs = ""
     inputs = input()
     inputs = inputs.split()
     if len(inputs) != 4:
@@ -261,10 +228,12 @@ def main():
     global fuck_it_offset_x
     fuck_it_offset_x = 300
     global participants  # VARFÖR BEHÖVS DENNA?! ÄR JU DEKLARERAD GLOBAL LÄNGD UPP I KODEN?!
-    participants = set_up(r'in/bjorno_deltagare.txt')
+    participants = set_up(r'in/participants.tsv')
     sort_by_name()  # soterar listan i bokstavsordning
     global participant_buttons
     participant_buttons = set_up_buttons()
+    global group_buttons
+    group_buttons = make_group_buttons()
     clock = pygame.time.Clock()
     run = True
     input_box = pygame.Rect(0, 0, 140, 40)
@@ -300,6 +269,8 @@ def main():
                         text += event.unicode
 
             for button in participant_buttons:
+                button.click(event)
+            for button in group_buttons:
                 button.click(event)
             # button1.click(event)
 
@@ -348,6 +319,8 @@ def main():
 
         for button in participant_buttons:
             button.show(WIN)
+        for button in group_buttons:
+            button.show(WIN)
 
         WIN.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
         # Blit the input_box rect.
@@ -364,3 +337,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sort()

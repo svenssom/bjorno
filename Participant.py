@@ -2,11 +2,12 @@ import numpy as np
 from random import randint
 import datetime
 
+
 class Participant:
-    def __init__(self, name="unnamed", guessed_time=0, bike=False, run=False, swim=False,
+    def __init__(self, name="unnamed", guessed_time=0, bike=False, run=False, swim=False, start_group="0",
                  start_time=datetime.datetime.fromtimestamp(0.000001),
                  end_time=datetime.datetime.fromtimestamp(0.000001), difference_as_percentage=-1, still_active=False,
-                 start_group="0", started=False):
+                 started=False):
         if name == "unnamed":
             self.name = "unnamed" + str(randint(0, 10000))
         else:
@@ -105,7 +106,7 @@ class Participant:
     def __repr__(self):
         return "\n" + str(self.name) + "\n   gissad tid: " + str(self.guessed_time) + "\n   cyklar? " + str(
             self.bike) + "\n   springer? " + str(self.run) + "\n   simmar? " + str(self.swim) + "\n   starttid: " + str(
-            self.start_time) + "\n   sluttid: " + str(self.start_time_str) + "\n"  # str(self.slut_tid)
+            self.start_time) + "\n   sluttid: " + str(self.start_time_str) + "\n   grupp: " + str(self.start_group)
 
     def calculate_result(self):
         self.difference_as_percentage = np.abs(
