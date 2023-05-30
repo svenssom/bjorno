@@ -1,11 +1,3 @@
-import pygame
-import numpy as np
-import time
-from random import randint
-import datetime
-from os.path import exists
-from copy import deepcopy
-from Participant import Participant
 from ParticipantButton import *
 
 pygame.init()

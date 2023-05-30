@@ -1,11 +1,6 @@
-import pygame
 import numpy as np
-import time
 from random import randint
 import datetime
-from os.path import exists
-from copy import deepcopy
-
 
 class Participant:
     def __init__(self, name="unnamed", guessed_time=0, bike=False, run=False, swim=False,
