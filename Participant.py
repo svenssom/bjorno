@@ -27,7 +27,7 @@ class Participant:
         self.start_time = start_time
         self.start_time_str = self.start_time.strftime("%H:%M:%S")
         self.end_time = end_time
-        self.slut_tid_str = self.end_time.strftime("%H:%M:%S")
+        self.end_time_str = self.end_time.strftime("%H:%M:%S")
         self.difference = 0
         self.difference_as_percentage = difference_as_percentage
         self.still_active = still_active
@@ -59,7 +59,7 @@ class Participant:
     def fin(self):
         now = datetime.datetime.now()
         self.end_time = now
-        self.slut_tid_str = now.strftime("%H:%M:%S")
+        self.end_time_str = now.strftime("%H:%M:%S")
         self.still_active = False
         self.calculate_result()
         self.back_up_fin()
@@ -74,7 +74,7 @@ class Participant:
     def force_fin(self):
         now = datetime.datetime.now()
         self.end_time = now
-        self.slut_tid_str = now.strftime("%H:%M:%S")
+        self.end_time_str = now.strftime("%H:%M:%S")
         self.still_active = False
         self.calculate_result()
         self.back_up_fin()
@@ -114,7 +114,7 @@ class Participant:
         return str("date time\t" + self.name + "\t" + ("Simma," if self.swim else "") +
                    ("Springa/Gå," if self.run else "") + ("Cykla" if self.bike else "") + "\t" +
                    time_to_file_format(self.guessed_time) + "\t" + ("Ja" if self.start_group == 1 else "Nej") + "\t" +
-                   str(self.start_group) + "\t" + self.start_time_str + "\t" + self.slut_tid_str) + "\n"
+                   str(self.start_group) + "\t" + self.start_time_str + "\t" + self.end_time_str) + "\n"
 
 
     def __repr__(self):

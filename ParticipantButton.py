@@ -59,7 +59,7 @@ class Participant_Button:
         elif self.participant.still_active:
             self.x = self.x + 20
             self.participant.fin()
-            self.change_text(self.participant.name_and_group + " - måltid: " + self.participant.slut_tid_str,
+            self.change_text(self.participant.name_and_group + " - måltid: " + self.participant.end_time_str,
                              bg="green")
             self.participant.still_active = False
         else:
@@ -78,4 +78,4 @@ class Participant_Button:
         if self.participant.started and self.participant.still_active: 
             self.participant.fin()
             self.x = self.x + 20
-            self.change_text(self.participant.name_and_group +" - måltid: "+self.participant.slut_tid_str, bg="green")
+            self.change_text(self.participant.name_and_group +" - måltid: "+self.participant.end_time_str, bg="green")

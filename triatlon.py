@@ -276,10 +276,10 @@ def main():
 
         # end for event in pygame
 
-        if comando == "resultat":
+        if comando == "result":
             sort()
             comando = ""
-        elif comando == "add competetor":
+        elif comando == "add competitor":
             # todo
             x = 6
         elif comando == "redo set-up":
@@ -324,7 +324,7 @@ def main():
 
         WIN.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
         # Blit the input_box rect.
-        pygame.draw.rect(WIN, color, input_box, 2)
+        pygame.draw.rect(WIN, color, input_box, 2, border_radius = 5)
         pygame.display.flip()
 
         # draw_window()
