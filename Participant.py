@@ -3,6 +3,13 @@ from random import randint
 import datetime
 
 
+def time_to_file_format(guessed_time):
+    tot_sec = guessed_time
+    min = tot_sec // 60
+    sec = tot_sec % 60
+    min_and_sec = str(min) + ":" + str(sec)
+    return min_and_sec
+
 class Participant:
     def __init__(self, name="unnamed", guessed_time=0, bike=False, run=False, swim=False, start_group="0",
                  start_time=datetime.datetime.fromtimestamp(0.000001),
@@ -102,6 +109,13 @@ class Participant:
     def to_file_simple(self):
         return str(self.name) + " " + str(self.guessed_time) + " " + str(self.difference) + " " + str(
             self.difference_as_percentage) + " " + str(self.still_active) + "\n"
+
+    def to_file_form(self):
+        return str("date time\t" + self.name + "\t" + ("Simma," if self.swim else "") +
+                   ("Springa/Gå," if self.run else "") + ("Cykla" if self.bike else "") + "\t" +
+                   time_to_file_format(self.guessed_time) + "\t" + ("Ja" if self.start_group == 1 else "Nej") + "\t" +
+                   str(self.start_group) + "\t" + self.start_time_str + "\t" + self.slut_tid_str) + "\n"
+
 
     def __repr__(self):
         return "\n" + str(self.name) + "\n   gissad tid: " + str(self.guessed_time) + "\n   cyklar? " + str(

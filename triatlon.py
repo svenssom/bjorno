@@ -78,7 +78,7 @@ def set_up_buttons():
 
 
 def make_group_button(group_number):
-    i = 500*(group_number-1)
+    i = 500*(group_number-1) + 20
     j = 40
     tmp_buttons = []
     for button in participant_buttons:
@@ -100,7 +100,7 @@ def back_up(lista):
 
     f = open(r'out/' + tid, "w")
     for participant in lista:
-        f.write(participant.to_file())
+        f.write(participant.to_file_form())
     f.close()
     return
 
