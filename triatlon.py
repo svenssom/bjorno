@@ -1,20 +1,25 @@
 from copy import deepcopy
 from datetime import time
 from os.path import exists
+import pygame
 
 from ParticipantButton import *
 from Participant import *
 from GroupButton import *
 
+ROW_HEIGHT = 40
+
+COLUMN_WIDTH = 350
+
 pygame.init()
 fuck_it_offset_x = 100
 fuck_it_offset_y = 0
-WIDTH, HEIGHT = 1400, 800
+WIDTH, HEIGHT = 1420, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 font = pygame.font.SysFont("Arial", 15)
 pygame.display.set_caption("main window")
 WHITE = (255, 255, 255)
-FPS = 20
+FPS = 60
 
 
 def start_group(group):
@@ -35,7 +40,7 @@ def sec_as_str_to_minutes_and_sec(str):
     tot_sec = int(str)
     min = int(tot_sec // 60)
     sec = tot_sec % 60
-    min_and_sec = str(min) + ":" + str(sec)
+    min_and_sec = str(min) + ":" + str(int(sec))
     return min_and_sec
 
 
@@ -56,19 +61,27 @@ def read_participant_line(line):
     running = "Springa" in fields[2]
     biking = "Cykla" in fields[2]
     guessed_time = minutes_and_sec_as_str_to_sec(fields[3])
-    group = 1 if "Ja" in fields[4] else 2
+    if len(fields)>5 and fields[5]!='':
+        print(fields[5])
+        try:
+            group = int(fields[5])
+        except:
+            group = 1 if "Ja" in fields[4] else randint(3,4)
+    else:
+        group = 1 if "Ja" in fields[4] else randint(3,4)
+
     return Participant(name, guessed_time, biking, running, swimming, group)
 
 
 # skapa knappar för alla deltagare i deltagare_lista
 def set_up_buttons():
     buttons = []
-    i = 0
+    i = 20
     j = 90
     current_group = 1
     for participant in participants:
         if j > HEIGHT - 100 or participant.start_group > current_group:
-            i += 500
+            i += COLUMN_WIDTH
             j = 90
         current_group = participant.start_group
         buttons.append(Participant_Button(participant, (i, j)))
@@ -78,8 +91,8 @@ def set_up_buttons():
 
 
 def make_group_button(group_number):
-    i = 500*(group_number-1) + 20
-    j = 40
+    i = COLUMN_WIDTH*(group_number-1) + 20
+    j = ROW_HEIGHT
     tmp_buttons = []
     for button in participant_buttons:
         if button.participant.start_group == group_number:
@@ -122,7 +135,7 @@ def back_up_simpel_presentega(lista, version):
     f = open(r'out/' + tid, "w")
     for participant in lista:
         if participant.started and not participant.still_active:
-            f.write(participant.to_file_simple_presentega())
+            f.write(participant.to_file_simple_percentage())
     f.close()
     return
 
@@ -178,6 +191,7 @@ def sort():
 
 # end sort
 
+
 def sort_by_name():
     for i in range(len(participants) - 1):
         for j in range(len(participants) - 1):
@@ -185,7 +199,7 @@ def sort_by_name():
             next = participants[j + 1]
             if str(current.start_group) + current.name > str(next.start_group) + next.name:
                 participants[j], participants[j + 1] = participants[j + 1], participants[j]
-    print(participants)  # skriv ut resultatet i terminalen
+    # print(participants)  # skriv ut resultatet i terminalen
     back_up(participants)  # skriv in resultatet i en txt-fil
 
 
@@ -224,9 +238,9 @@ def fuckit():
 
 def main():
     global fuck_it_offset_y
-    fuck_it_offset_y = 40
+    fuck_it_offset_y = ROW_HEIGHT
     global fuck_it_offset_x
-    fuck_it_offset_x = 300
+    fuck_it_offset_x = 250
     global participants  # VARFÖR BEHÖVS DENNA?! ÄR JU DEKLARERAD GLOBAL LÄNGD UPP I KODEN?!
     participants = set_up(r'in/participants.tsv')
     sort_by_name()  # soterar listan i bokstavsordning
@@ -244,19 +258,41 @@ def main():
     text = ''
     comando = ""
 
+    WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+    WIN.fill("seashell")
+
     while run:
+
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 back_up(participants)
                 # lägg till så back-up fil skapas
                 run = False
+            # screen.fill((0, 0, 0))
+            #pygame.display.flip()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if input_box.collidepoint(event.pos):
-                    active = not active
-                else:
-                    active = False
-                color = color_active if active else color_inactive
+                if event.button == 1:
+                    if input_box.collidepoint(event.pos):
+                        active = not active
+                    else:
+                        active = False
+                    color = color_active if active else color_inactive
+                    #print("left mouse button")
+                #elif event.button == 2:
+                #    print("middle mouse button")
+                elif event.button == 3:
+                    #print("right mouse button")
+                    WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+                    WIN.fill("seashell")
+                    sort()
+                #elif event.button == 4:
+                #    print("mouse wheel up")
+                #elif event.button == 5:
+                #    print("mouse wheel down")
+
+
             if event.type == pygame.KEYDOWN:
                 if active:
                     if event.key == pygame.K_RETURN:
@@ -307,8 +343,11 @@ def main():
                 button.fin()
             comando = ""
 
-        # WIN.fill((WHITE))
-        WIN.fill((1, 1, 1))
+
+
+
+
+        # WIN.fill((1, 1, 1))
         # Render the current text.
         txt_surface = font.render(text, True, color)
         # Resize the box if the text is too long.
@@ -316,9 +355,11 @@ def main():
         input_box.w = width
         # button1.show()
         # Blit the text.
-
+        pos = pygame.mouse.get_pos()
         for button in participant_buttons:
+            button.hoverd = button.rect.collidepoint(pos)
             button.show(WIN)
+            button.draw(WIN)
         for button in group_buttons:
             button.show(WIN)
 
